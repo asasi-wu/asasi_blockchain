@@ -1,8 +1,6 @@
 package blc
 
 import (
-	"bytes"
-	"crypto/sha256"
 	"sync/atomic"
 	"time"
 )
@@ -12,24 +10,29 @@ type Block struct{
 	PreBlockHash	[]byte
 	Height	int64
 	data	[]byte
+	nonce	int64
 }
 func NewBlock(preBlockHash []byte, height int64,data []byte) *Block{
-	return &Block{
+	block:=Block{
 		Timestamp:time.Now().Unix(),
 		Hash: nil,
 		PreBlockHash: preBlockHash,
 		Height:	atomic.AddInt64(&height, 1),
 		data: data,
 	}
+	block.SetHash()
+	pow:=NewProofOfWork(&block)
+	hash,nonce:=pow.Run()
+	block.Hash=hash
+	block.nonce=int64(nonce)
+	return &block
+
 	
 }
 func (b *Block)SetHash(){
-	blockBytes:=bytes.Join([][]byte{
-		IntToHex(b.Timestamp),
-		IntToHex(b.Height),
-		b.PreBlockHash,
-		b.data,
-	}, []byte{})
-	hash:=sha256.Sum256(blockBytes)
-	b.Hash=hash[:]
+
+}
+
+func CreateGenesisBlock(data []byte) *Block{
+	return NewBlock(nil, 1, data)
 }
