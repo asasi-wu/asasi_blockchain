@@ -4,7 +4,6 @@ import (
 	"asasi_blockchain/BLC/utils"
 	"bytes"
 	"crypto/sha256"
-	"fmt"
 	"math/big"
 )
 
@@ -40,7 +39,6 @@ func (proofOfWork *ProofOfWork) Run() ([]byte, int) {
 		nonce++
 
 	}
-	fmt.Printf("nonce number: %v", nonce)
 	return hash[:], nonce
 
 }
@@ -51,7 +49,7 @@ func (pow *ProofOfWork) prepareData(nonce int64) []byte {
 		utils.IntToHex(pow.Block.Timestamp),
 		utils.IntToHex(pow.Block.Height),
 		pow.Block.PreBlockHash,
-		pow.Block.data,
+		pow.Block.Data,
 		utils.IntToHex(nonce),
 		utils.IntToHex(targetBit),
 	}, []byte{})

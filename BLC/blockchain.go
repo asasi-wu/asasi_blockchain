@@ -1,7 +1,10 @@
 package blc
 
 import (
+	"fmt"
 	"log"
+	"math/big"
+	"time"
 
 	"github.com/boltdb/bolt"
 )
@@ -73,5 +76,28 @@ func CreateBlockChain()*BlockChain{
 		return nil
 	})
 	return &BlockChain{db,blockHash}
+
+}
+func (bc *BlockChain) TraverseBlockChain(){
+	var curBlock *Block
+	bcit:=bc.Iterator()
+	fmt.Println("traversing the blcokchain and print all blocks")
+
+	for{
+		fmt.Println("---------------------------------------")
+		curBlock=bcit.Next()
+		fmt.Printf("Hash: %x\n", curBlock.Hash)
+		fmt.Printf("Height: %v\n", curBlock.Height)
+		fmt.Printf("data: %v\n", string(curBlock.Data))
+		fmt.Println("Timestamp:", time.Now().Format(fmt.Sprint(curBlock.Timestamp)))
+		fmt.Printf("PreHash: %x\n", curBlock.PreBlockHash)
+		fmt.Printf("Nonce: %v\n", curBlock.Nonce)
+		var hashInt big.Int
+		hashInt.SetBytes(curBlock.PreBlockHash)
+		if big.NewInt(0).Cmp(&hashInt)==0{
+			break
+		}
+
+	}
 
 }

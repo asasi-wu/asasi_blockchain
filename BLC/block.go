@@ -12,8 +12,8 @@ type Block struct{
 	Hash	  []byte
 	PreBlockHash	[]byte
 	Height	int64
-	data	[]byte
-	nonce	int64 //碰撞次数，也可以是随机数
+	Data	[]byte
+	Nonce	int64 //碰撞次数，也可以是随机数
 }
 func NewBlock(preBlockHash []byte, height int64,data []byte) *Block{
 	block:=Block{
@@ -21,13 +21,13 @@ func NewBlock(preBlockHash []byte, height int64,data []byte) *Block{
 		Hash: nil,
 		PreBlockHash: preBlockHash,
 		Height:	atomic.AddInt64(&height, 1),
-		data: data,
+		Data: data,
 	}
 	pow:=NewProofOfWork(&block)
 	//execute pow to get hash
 	hash,nonce:=pow.Run()
 	block.Hash=hash
-	block.nonce=int64(nonce)
+	block.Nonce=int64(nonce)
 	return &block
 
 	

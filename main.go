@@ -2,9 +2,6 @@ package main
 
 import (
 	blc "asasi_blockchain/BLC"
-	"fmt"
-
-	"github.com/boltdb/bolt"
 )
 
 func main() {
@@ -26,16 +23,17 @@ func main() {
 	bc.AddBlock([]byte("alice send 100 eth to bob"))
 	bc.AddBlock([]byte("tom send 100 eth to simon"))
 
-	bc.DB.View(func(tx *bolt.Tx)error{
-		b:=tx.Bucket([]byte("blocks"))
-		if nil!=b{
-			hash:=b.Get([]byte("1"))
-			fmt.Printf("latest hash value%v \n", hash)
-			
+	// bc.DB.View(func(tx *bolt.Tx)error{
+	// 	b:=tx.Bucket([]byte("blocks"))
+	// 	if nil!=b{
+	// 		hash:=b.Get([]byte("1"))
+	// 		fmt.Printf("latest hash value%v \n", hash)
 
-		}
-		return nil
-	})
+
+	// 	}
+	// 	return nil
+	// })
+	bc.TraverseBlockChain()
 
 
 }
