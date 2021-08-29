@@ -1,6 +1,9 @@
 package blc
 
 import (
+	"bytes"
+	"encoding/gob"
+	"log"
 	"sync/atomic"
 	"time"
 )
@@ -10,7 +13,7 @@ type Block struct{
 	PreBlockHash	[]byte
 	Height	int64
 	data	[]byte
-	nonce	int64
+	nonce	int64 //碰撞次数，也可以是随机数
 }
 func NewBlock(preBlockHash []byte, height int64,data []byte) *Block{
 	block:=Block{
@@ -20,8 +23,8 @@ func NewBlock(preBlockHash []byte, height int64,data []byte) *Block{
 		Height:	atomic.AddInt64(&height, 1),
 		data: data,
 	}
-	block.SetHash()
 	pow:=NewProofOfWork(&block)
+	//execute pow to get hash
 	hash,nonce:=pow.Run()
 	block.Hash=hash
 	block.nonce=int64(nonce)
@@ -29,10 +32,25 @@ func NewBlock(preBlockHash []byte, height int64,data []byte) *Block{
 
 	
 }
-func (b *Block)SetHash(){
-
-}
 
 func CreateGenesisBlock(data []byte) *Block{
 	return NewBlock(nil, 1, data)
+}
+
+func (block *Block)Serialize() []byte{
+	var buffer bytes.Buffer
+	encoder:=gob.NewEncoder(&buffer)
+	if err:=encoder.Encode(block);nil!=err{
+		log.Panicf("Block serialize encoding err%v \n", err)
+	}
+
+	return buffer.Bytes()
+}
+func DeserializeBlock(BlockBytes []byte) *Block{
+	var block Block
+	decoder:=gob.NewDecoder(bytes.NewReader(BlockBytes))
+	if err:=decoder.Decode(&block);err!=nil{
+		log.Panicf("Block deserialize encoding err%v \n", err)
+	}
+	return &block
 }
