@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"os"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -25,7 +26,7 @@ func (bc *BlockChain)AddBlock(data []byte){
 		if nil!=b{
 			blockBytes:=b.Get(bc.Tip)
 			latest_block:=DeserializeBlock(blockBytes)
-			newBlock:=NewBlock(latest_block.Hash, latest_block.Height+1, data)
+			newBlock:=NewBlock(latest_block.Hash, latest_block.Height, data)
 			err:=b.Put(newBlock.Hash, newBlock.Serialize())
 			if err!=nil{
 				log.Panicf("Insert new block to DB failed %v\n", err)
@@ -44,7 +45,17 @@ func (bc *BlockChain)AddBlock(data []byte){
 	}
 
 }
+func dbExist() bool{
+	if _,err:=os.Stat(dbName);os.IsNotExist(err){
+		return false
+	}
+	return true
+}
 func CreateBlockChain()*BlockChain{
+	if dbExist(){
+		fmt.Println("创世区块存在")
+		os.Exit(1)
+	}
 	var blockHash []byte
 	db, err:=bolt.Open(dbName,0600,nil)
 	if err!=nil{
@@ -100,4 +111,22 @@ func (bc *BlockChain) TraverseBlockChain(){
 
 	}
 
+}
+func BlockChainObject() *BlockChain{
+	db,err:=bolt.Open(dbName,0600,nil)
+	var tip []byte
+	if err!=nil{
+		log.Panicf("Open db failed [%s]", err)
+	}
+	err=db.View(func(tx *bolt.Tx) error{
+		b:=tx.Bucket([]byte(blockTableName))
+		if b!=nil{
+			tip=b.Get([]byte("1"))
+		}
+		return nil
+	})
+	if err!=nil{
+		log.Panicf("get the blockchain object failed %v\n", err)
+	}
+	return &BlockChain{db,tip}
 }

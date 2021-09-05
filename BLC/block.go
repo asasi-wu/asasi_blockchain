@@ -34,7 +34,7 @@ func NewBlock(preBlockHash []byte, height int64,data []byte) *Block{
 }
 
 func CreateGenesisBlock(data []byte) *Block{
-	return NewBlock(nil, 1, data)
+	return NewBlock(nil, 0, data)
 }
 
 func (block *Block)Serialize() []byte{
