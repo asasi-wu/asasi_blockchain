@@ -2,6 +2,7 @@ package blc
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/gob"
 	"log"
 	"sync/atomic"
@@ -12,16 +13,16 @@ type Block struct{
 	Hash	  []byte
 	PreBlockHash	[]byte
 	Height	int64
-	Data	[]byte
+	Txs     []*Transaction //交易数据
 	Nonce	int64 //碰撞次数，也可以是随机数
 }
-func NewBlock(preBlockHash []byte, height int64,data []byte) *Block{
+func NewBlock(preBlockHash []byte, height int64,txs []*Transaction) *Block{
 	block:=Block{
 		Timestamp:time.Now().Unix(),
 		Hash: nil,
 		PreBlockHash: preBlockHash,
 		Height:	atomic.AddInt64(&height, 1),
-		Data: data,
+		Txs: txs,
 	}
 	pow:=NewProofOfWork(&block)
 	//execute pow to get hash
@@ -33,8 +34,8 @@ func NewBlock(preBlockHash []byte, height int64,data []byte) *Block{
 	
 }
 
-func CreateGenesisBlock(data []byte) *Block{
-	return NewBlock(nil, 0, data)
+func CreateGenesisBlock(txs []*Transaction) *Block{
+	return NewBlock(nil, 0, txs)
 }
 
 func (block *Block)Serialize() []byte{
@@ -53,4 +54,12 @@ func DeserializeBlock(BlockBytes []byte) *Block{
 		log.Panicf("Block deserialize encoding err%v \n", err)
 	}
 	return &block
+}
+func (block *Block)HashTransaction()[]byte{
+	var txHashes [][]byte
+	for _,tx:=range block.Txs{
+		txHashes=append(txHashes, tx.TxHash)
+	}
+	txHash:=sha256.Sum256(bytes.Join(txHashes, []byte{}))
+	return txHash[:]
 }

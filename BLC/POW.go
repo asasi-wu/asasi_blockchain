@@ -49,7 +49,7 @@ func (pow *ProofOfWork) prepareData(nonce int64) []byte {
 		utils.IntToHex(pow.Block.Timestamp),
 		utils.IntToHex(pow.Block.Height),
 		pow.Block.PreBlockHash,
-		pow.Block.Data,
+		pow.Block.HashTransaction(),
 		utils.IntToHex(nonce),
 		utils.IntToHex(targetBit),
 	}, []byte{})

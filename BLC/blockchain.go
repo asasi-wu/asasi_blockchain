@@ -20,13 +20,13 @@ type BlockChain struct{
 }
 
 
-func (bc *BlockChain)AddBlock(data []byte){
+func (bc *BlockChain)AddBlock(txs []*Transaction){
 	err:=bc.DB.Update(func(tx *bolt.Tx) error{
 		b:=tx.Bucket([]byte(blockTableName))
 		if nil!=b{
 			blockBytes:=b.Get(bc.Tip)
 			latest_block:=DeserializeBlock(blockBytes)
-			newBlock:=NewBlock(latest_block.Hash, latest_block.Height, data)
+			newBlock:=NewBlock(latest_block.Hash, latest_block.Height, txs)
 			err:=b.Put(newBlock.Hash, newBlock.Serialize())
 			if err!=nil{
 				log.Panicf("Insert new block to DB failed %v\n", err)
@@ -51,7 +51,7 @@ func dbExist() bool{
 	}
 	return true
 }
-func CreateBlockChain()*BlockChain{
+func CreateBlockChain(txs []*Transaction)*BlockChain{
 	if dbExist(){
 		fmt.Println("创世区块存在")
 		os.Exit(1)
@@ -68,7 +68,7 @@ func CreateBlockChain()*BlockChain{
 			if err!=nil{
 				log.Panicf("create bucket [%s] failed %v\n", blockTableName,err)
 			}
-			genesisBlock:=CreateGenesisBlock([]byte("init blockchain"))
+			genesisBlock:=CreateGenesisBlock(txs)
 			err=b.Put(genesisBlock.Hash, genesisBlock.Serialize())
 			if err!=nil{
 				log.Panicf("insert the genesis block failed%v", err)
@@ -99,7 +99,6 @@ func (bc *BlockChain) TraverseBlockChain(){
 		curBlock=bcit.Next()
 		fmt.Printf("Hash: %x\n", curBlock.Hash)
 		fmt.Printf("Height: %v\n", curBlock.Height)
-		fmt.Printf("data: %v\n", string(curBlock.Data))
 		fmt.Println("Timestamp:", time.Now().Format(fmt.Sprint(curBlock.Timestamp)))
 		fmt.Printf("PreHash: %x\n", curBlock.PreBlockHash)
 		fmt.Printf("Nonce: %v\n", curBlock.Nonce)

@@ -19,16 +19,16 @@ func PrintUsage(){
 }
 
 func (cli *CLI) create(){
-	CreateBlockChain()
+	CreateBlockChain([]*Transaction{})
 }
 
-func (cli *CLI) addBlock(data string){
+func (cli *CLI) addBlock(txs []*Transaction){
 	if !dbExist(){
 		fmt.Println("Database not exists")
 		os.Exit(1)
 	}
 	blockchain:=BlockChainObject()
-	blockchain.AddBlock([]byte(data))
+	blockchain.AddBlock(txs)
 }
 
 func (cli *CLI) printchain(){
@@ -78,7 +78,7 @@ func (cli *CLI) Run(){
 			PrintUsage()
 			os.Exit(1)
 		}
-		cli.addBlock(*flagAddBlockArg)
+		cli.addBlock([]*Transaction{})
 
 	}
 	if printChainCmd.Parsed(){
